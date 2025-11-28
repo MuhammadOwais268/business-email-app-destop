@@ -3,3 +3,9 @@ node_modules
 .DS_Store
 .env
 release/
+# ignore build and release outputs
+build/
+release/
+node_modules/
+*.log
+.DS_Store

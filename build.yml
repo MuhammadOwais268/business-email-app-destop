@@ -1,0 +1,93 @@
+name: Build and package (Linux & Windows)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build-linux:
+    name: Build Linux artifacts (AppImage, deb)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend (linux)
+        run: npm run build-backend:linux
+
+      - name: Build renderer and package
+        run: npm run build
+
+      - name: List release files
+        run: ls -la release || true
+
+      - name: Create checksums
+        run: |
+          set -euo pipefail
+          if [ -d release ]; then
+            cd release
+            # Remove old checksums if present
+            rm -f checksums.sha256 || true
+            # Find files and create a single checksums file
+            if find . -type f ! -name 'checksums.sha256' -maxdepth 2 | grep -q .; then
+              find . -type f ! -name 'checksums.sha256' -maxdepth 2 -print0 | xargs -0 sha256sum > checksums.sha256 || true
+            fi
+            cd - >/dev/null || true
+          fi
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: release/**
+
+  build-windows:
+    name: Build Windows artifacts (NSIS, portable)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend (windows)
+        run: npm run build-backend:all
+
+      - name: Build renderer and package (Windows)
+        run: npm run build
+
+      - name: List release files
+        run: dir release || true
+
+      - name: Create checksums (Windows)
+        shell: powershell
+        run: |
+          if (Test-Path release) {
+            $out = Join-Path -Path "release" -ChildPath "checksums.sha256"
+            if (Test-Path $out) { Remove-Item $out -ErrorAction SilentlyContinue }
+            Get-ChildItem -Path release -File -Recurse | ForEach-Object {
+              $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash
+              "$hash  $($_.FullName)" | Out-File -FilePath $out -Append -Encoding ascii
+            }
+          }
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: release/**
