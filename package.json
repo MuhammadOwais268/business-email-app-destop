@@ -11,19 +11,24 @@
     "dev:electron": "electron .",
     "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:electron\"",
     "start": "electron .",
-    "build": "vite build && electron-builder"
+    "build": "vite build && electron-builder",
+    "build-backend:linux": "npx pkg backend/server.js --targets node18-linux-x64 --output build/backend/linux/server",
+    "build-backend:all": "npx pkg backend/server.js --targets node18-linux-x64,node18-win-x64 --output build/backend/server"
   },
   "devDependencies": {
     "electron": "^26.0.0",
     "vite": "^5.0.0",
     "electron-builder": "^24.0.0",
     "concurrently": "^8.0.0",
-    "@vitejs/plugin-react": "^4.0.0"
+    "@vitejs/plugin-react": "^4.0.0",
+    "pkg": "^5.8.0"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "axios": "^1.4.0",
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
     "@mui/material": "^5.14.7",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -44,7 +49,9 @@
       "package.json",
       "build/**"
     ],
-    "extraResources": [],
+    "extraResources": [
+      { "from": "build/backend/", "to": "backend", "filter": ["**/*"] }
+    ],
     "linux": {
       "target": ["AppImage", "deb"]
     },

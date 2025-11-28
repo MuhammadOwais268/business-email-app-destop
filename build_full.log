@@ -1,0 +1,25 @@
+
+> business-email-electron@0.1.0 build
+> vite build && electron-builder
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+✓ 955 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /home/owais/Downloads/business-email-app-electron/renderer/src/services/api.js is dynamically imported by /home/owais/Downloads/business-email-app-electron/renderer/src/components/WebhookSearch.jsx but also statically imported by /home/owais/Downloads/business-email-app-electron/renderer/src/components/EmailComposer.jsx, /home/owais/Downloads/business-email-app-electron/renderer/src/components/JsonTester.jsx, /home/owais/Downloads/business-email-app-electron/renderer/src/components/WebhookSearch.jsx, dynamic import will not move module into another chunk.
+
+rendering chunks...
+computing gzip size...
+../dist/index.html                  0.32 kB │ gzip:   0.23 kB
+../dist/assets/index-BMUQWQf-.js  372.60 kB │ gzip: 120.82 kB
+✓ built in 5.28s
+  • electron-builder  version=24.13.3 os=6.8.0-85-generic
+  • loaded configuration  file=package.json ("build" field)
+  • packaging       platform=linux arch=x64 electron=26.6.10 appOutDir=release/linux-unpacked
+  • building        target=AppImage arch=x64 file=release/BusinessEmail-0.1.0.AppImage
+  • application Linux category is set to default "Utility"  reason=linux.category is not set and cannot map from macOS docs=https://www.electron.build/configuration/linux
+  • default Electron icon is used  reason=application icon is not set
+  • building        target=deb arch=x64 file=release/business-email-electron_0.1.0_amd64.deb
+  • adding autoupdate files for: deb. (Beta feature)  resourceDir=/home/owais/Downloads/business-email-app-electron/release/linux-unpacked/resources
+  • application Linux category is set to default "Utility"  reason=linux.category is not set and cannot map from macOS docs=https://www.electron.build/configuration/linux

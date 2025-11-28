@@ -1,5 +1,65 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const { spawn } = require('child_process');
+const net = require('net');
+
+let backendProc = null;
+
+function waitForPort(host, port, timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    (function attempt() {
+      const sock = new net.Socket();
+      sock.setTimeout(1000);
+      sock.once('connect', () => {
+        sock.destroy();
+        resolve(true);
+      });
+      sock.once('error', () => {
+        sock.destroy();
+        if (Date.now() - start > timeout) return reject(new Error('timeout'));
+        setTimeout(attempt, 200);
+      });
+      sock.once('timeout', () => {
+        sock.destroy();
+        if (Date.now() - start > timeout) return reject(new Error('timeout'));
+        setTimeout(attempt, 200);
+      });
+      sock.connect(port, host);
+    })();
+  });
+}
+
+function startBundledBackend() {
+  try {
+    const execName = process.platform === 'win32' ? 'server.exe' : 'server';
+    const backendPath = path.join(process.resourcesPath, 'backend', execName);
+    // Only attempt to start if the file exists
+    const fs = require('fs');
+    if (!fs.existsSync(backendPath)) {
+      console.log('Bundled backend not found at', backendPath);
+      return Promise.resolve();
+    }
+
+    backendProc = spawn(backendPath, [], {
+      cwd: path.dirname(backendPath),
+      env: { ...process.env },
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    backendProc.stdout.on('data', (d) => console.log('[backend]', d.toString()));
+    backendProc.stderr.on('data', (d) => console.error('[backend]', d.toString()));
+
+    // wait for local health endpoint
+    return waitForPort('127.0.0.1', 5678, 8000).catch((err) => {
+      console.warn('Backend did not become ready in time:', err.message);
+    });
+  } catch (e) {
+    console.error('Failed to start bundled backend', e);
+    return Promise.resolve();
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -29,7 +89,13 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  if (app.isPackaged) {
+    // start bundled backend when packaged
+    await startBundledBackend();
+  }
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

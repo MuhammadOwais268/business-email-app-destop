@@ -44,6 +44,14 @@ Triggering the CI build (GitHub):
 1. Push your repo to GitHub (branch `main` or `master`) or open the Actions tab and run the workflow manually via "Run workflow".
 2. After the workflow finishes, download the artifacts from the workflow run (Actions → select run → Artifacts → `linux-release` / `windows-release`).
 
+Releases
+--------
+When you push a release tag (for example `v0.1.0`) the repository workflow will create a GitHub Release and attach the built installers. You can download the Windows installer (`.exe`) or the Linux AppImage/`.deb` from the Releases page:
+
+- Releases URL for this project: https://github.com/MuhammadOwais268/business-email-app-destop/releases
+
+If you don't see the `.exe` on Releases, check Actions → the release workflow run → Artifacts (`windows-release`) and download the artifact ZIP — the `.exe` will be inside the `release/` folder in that ZIP.
+
 Local Docker build for Linux (optional, avoids glibc/libstdc++ mismatch):
 If you prefer to build locally for reliable Linux artifacts (recommended to avoid GLIBCXX issues), use the official electron-builder Docker image. From the project root:
 ```bash
