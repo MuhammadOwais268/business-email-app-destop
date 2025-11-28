@@ -1,0 +1,55 @@
+{
+  "name": "business-email-electron",
+  "version": "0.1.0",
+  "description": "Business & Email Electron app (PoC)",
+  "homepage": "https://example.com/business-email",
+  "author": "Muhammad Owais <owais@example.com>",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "dev:renderer": "vite",
+    "dev:electron": "electron .",
+    "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:electron\"",
+    "start": "electron .",
+    "build": "vite build && electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "vite": "^5.0.0",
+    "electron-builder": "^24.0.0",
+    "concurrently": "^8.0.0",
+    "@vitejs/plugin-react": "^4.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.4.0",
+    "@mui/material": "^5.14.7",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.0"
+  }
+  ,
+  "build": {
+    "appId": "com.example.business-email",
+    "productName": "BusinessEmail",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**",
+      "electron/**",
+      "node_modules/**",
+      "package.json",
+      "build/**"
+    ],
+    "extraResources": [],
+    "linux": {
+      "target": ["AppImage", "deb"]
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    }
+  }
+}
