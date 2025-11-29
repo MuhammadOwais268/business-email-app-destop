@@ -5,7 +5,7 @@ const net = require('net');
 
 let backendProc = null;
 
-function waitForPort(host, port, timeout = 5000) {
+function waitForPort(host, port, timeout = 15000) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
     (function attempt() {
@@ -61,6 +61,29 @@ function startBundledBackend() {
   }
 }
 
+function startDevBackend() {
+  try {
+    const backendPath = path.join(__dirname, '../backend/server.js');
+    backendProc = spawn('node', [backendPath], {
+      cwd: path.dirname(backendPath),
+      env: { ...process.env },
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    backendProc.stdout.on('data', (d) => console.log('[backend]', d.toString()));
+    backendProc.stderr.on('data', (d) => console.error('[backend]', d.toString()));
+
+    // wait for local health endpoint
+    return waitForPort('127.0.0.1', 5678, 8000).catch((err) => {
+      console.warn('Backend did not become ready in time:', err.message);
+    });
+  } catch (e) {
+    console.error('Failed to start development backend', e);
+    return Promise.resolve();
+  }
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
@@ -93,6 +116,9 @@ app.whenReady().then(async () => {
   if (app.isPackaged) {
     // start bundled backend when packaged
     await startBundledBackend();
+  } else {
+    // start backend in development mode
+    await startDevBackend();
   }
   createWindow();
 });
@@ -103,4 +129,11 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+app.on('before-quit', () => {
+  if (backendProc) {
+    console.log('Stopping backend server...');
+    backendProc.kill();
+  }
 });
